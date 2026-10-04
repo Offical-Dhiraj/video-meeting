@@ -1,37 +1,51 @@
-import "dotenv/config";
+import dotenv from "dotenv";
 import { z } from "zod";
+
+dotenv.config();
 
 const envSchema = z.object({
   NODE_ENV: z
     .enum(["development", "test", "production"])
     .default("development"),
 
-  PORT: z.coerce
+  PORT: z.coerce.number().int().positive().default(5000),
+
+  MONGO_URI: z.string().min(1),
+
+  CLIENT_URL: z.string().url(),
+
+  JWT_ACCESS_SECRET: z.string().min(32),
+
+  JWT_ACCESS_EXPIRES_IN: z.string().default("15m"),
+
+  REFRESH_TOKEN_EXPIRES_DAYS: z.coerce
     .number()
     .int()
-    .min(1)
-    .max(65535)
-    .default(5000),
+    .positive()
+    .default(30),
 
-  MONGO_URI: z
+  COOKIE_NAME: z
     .string()
-    .min(1, "MONGO_URI is required"),
+    .min(1)
+    .default("meetflow_refresh"),
 
-  CLIENT_URL: z
-    .url("CLIENT_URL must be a valid URL")
-    .default("http://localhost:5173")
+  SMTP_HOST: z.string().optional(),
+  SMTP_PORT: z.coerce.number().int().positive().default(587),
+  SMTP_USER: z.string().optional(),
+  SMTP_PASSWORD: z.string().optional(),
+  SMTP_FROM: z.string().optional(),
 });
 
-const result = envSchema.safeParse(process.env);
+const parsedEnv = envSchema.safeParse(process.env);
 
-if (!result.success) {
+if (!parsedEnv.success) {
   console.error("Invalid environment variables:");
 
   console.error(
-    JSON.stringify(result.error.flatten().fieldErrors, null, 2)
+    parsedEnv.error.flatten().fieldErrors
   );
 
   process.exit(1);
 }
 
-export const env = result.data;
+export const env = parsedEnv.data;

@@ -4,74 +4,69 @@ const userSchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      required: [true, "Name is required"],
+      required: true,
       trim: true,
       minlength: 2,
-      maxlength: 80
+      maxlength: 100,
     },
 
     email: {
       type: String,
-      required: [true, "Email is required"],
+      required: true,
       unique: true,
       lowercase: true,
       trim: true,
-      index: true
+      index: true,
     },
 
     passwordHash: {
       type: String,
-      required: [true, "Password hash is required"],
-      select: false
+      required: true,
+      select: false,
     },
 
     avatar: {
       type: String,
       default: null,
-      trim: true
     },
 
     role: {
       type: String,
       enum: ["user", "admin"],
       default: "user",
-      index: true
+      index: true,
     },
 
     isEmailVerified: {
       type: Boolean,
       default: false,
-      index: true
+      index: true,
     },
 
     emailVerificationTokenHash: {
       type: String,
       select: false,
-      default: null
     },
 
     emailVerificationExpiresAt: {
       type: Date,
       select: false,
-      default: null
     },
 
     passwordResetTokenHash: {
       type: String,
       select: false,
-      default: null
     },
 
     passwordResetExpiresAt: {
       type: Date,
       select: false,
-      default: null
-    }
+    },
   },
   {
     timestamps: true,
-    versionKey: false
+    versionKey: false,
   }
 );
 
-export const User = mongoose.model("User", userSchema);
+export default mongoose.model("User", userSchema);

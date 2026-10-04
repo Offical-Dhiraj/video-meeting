@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import { env } from "./env.js";
 import { setServers } from "node:dns/promises"
 
-export const connectDatabase = async () => {
+const connectDatabase = async () => {
   try {
     setServers(["1.1.1.1", "8.8.8.8"])
 
@@ -22,3 +22,5 @@ export const connectDatabase = async () => {
     process.exit(1);
   }
 };
+
+export default connectDatabase;

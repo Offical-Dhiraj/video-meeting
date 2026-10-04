@@ -1,18 +1,31 @@
-export const errorMiddleware = (err, req, res, next) => {
-  const statusCode = err.statusCode || 500;
+import { env } from "../config/env.js";
 
-  const response = {
+export const errorHandler = (
+  err,
+  req,
+  res,
+  next
+) => {
+  console.error("❌ Error:", err);
+
+  const statusCode =
+    err.statusCode || 500;
+
+  const message =
+    err.isOperational
+      ? err.message
+      : "Internal server error";
+
+  res.status(statusCode).json({
     success: false,
-    message:
-      statusCode === 500
-        ? "Internal server error"
-        : err.message,
-    code: err.code || "INTERNAL_SERVER_ERROR"
-  };
+    message,
 
-  if (process.env.NODE_ENV !== "production") {
-    response.stack = err.stack;
-  }
+    ...(err.code && {
+      code: err.code,
+    }),
 
-  res.status(statusCode).json(response);
+    ...(env.NODE_ENV !== "production" && {
+      stack: err.stack,
+    }),
+  });
 };

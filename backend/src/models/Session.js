@@ -6,52 +6,51 @@ const sessionSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
-      index: true
+      index: true,
     },
 
     refreshTokenHash: {
       type: String,
       required: true,
-      select: false
+      select: false,
     },
 
     deviceInfo: {
       type: String,
+      default: "Unknown Device",
       maxlength: 500,
-      default: null
     },
 
     userAgent: {
       type: String,
       maxlength: 1000,
-      default: null
     },
 
     ipAddress: {
       type: String,
       maxlength: 100,
-      default: null
     },
 
     expiresAt: {
       type: Date,
-      required: true
+      required: true,
+      index: true,
     },
 
     revokedAt: {
       type: Date,
       default: null,
-      index: true
+      index: true,
     },
 
     lastUsedAt: {
       type: Date,
-      default: Date.now
-    }
+      default: Date.now,
+    },
   },
   {
     timestamps: true,
-    versionKey: false
+    versionKey: false,
   }
 );
 
@@ -60,7 +59,7 @@ sessionSchema.index(
   { expireAfterSeconds: 0 }
 );
 
-export const Session = mongoose.model(
+export default mongoose.model(
   "Session",
   sessionSchema
 );

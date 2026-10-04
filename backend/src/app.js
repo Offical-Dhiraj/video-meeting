@@ -3,74 +3,78 @@ import cors from "cors";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import pinoHttp from "pino-http";
-import pino from "pino";
+import cookieParser from "cookie-parser";
 
 import { env } from "./config/env.js";
+
 import healthRoutes from "./routes/health.routes.js";
-import { notFoundMiddleware } from "./middleware/notFound.middleware.js";
-import { errorMiddleware } from "./middleware/error.middleware.js";
+import authRoutes from "./routes/auth.routes.js";
+import meetingRoutes from "./routes/meeting.routes.js";
+
+import { notFound } from "./middleware/notFound.middleware.js";
+import { errorHandler } from "./middleware/error.middleware.js";
 
 const app = express();
-
-const logger = pino({
-  level: env.NODE_ENV === "production" ? "info" : "debug"
-});
-
-app.disable("x-powered-by");
-
-app.use(
-  pinoHttp({
-    logger
-  })
-);
 
 app.use(helmet());
 
 app.use(
   cors({
     origin: env.CLIENT_URL,
-    credentials: true
+    credentials: true,
   })
 );
 
+app.use(pinoHttp());
+
 app.use(
   express.json({
-    limit: "100kb"
+    limit: "100kb",
   })
 );
 
 app.use(
   express.urlencoded({
     extended: true,
-    limit: "100kb"
+    limit: "100kb",
   })
 );
 
-const globalRateLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  limit: 300,
-  standardHeaders: "draft-8",
-  legacyHeaders: false,
-  message: {
-    success: false,
-    message: "Too many requests. Please try again later.",
-    code: "RATE_LIMIT_EXCEEDED"
-  }
-});
+app.use(cookieParser());
+
+const globalRateLimiter =
+  rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 300,
+    standardHeaders: true,
+    legacyHeaders: false,
+  });
 
 app.use(globalRateLimiter);
 
 app.get("/", (req, res) => {
-  res.status(200).json({
+  res.json({
     success: true,
-    message: "Welcome to MeetFlow API"
+    message: "MeetFlow API is running",
   });
 });
 
-app.use("/api/health", healthRoutes);
+app.use(
+  "/api/health",
+  healthRoutes
+);
 
-app.use(notFoundMiddleware);
+app.use(
+  "/api/auth",
+  authRoutes
+);
+app.use(
+  "/api/meetings",
+  meetingRoutes
+);
 
-app.use(errorMiddleware);
+app.use(notFound);
+
+app.use(errorHandler);
 
 export default app;
