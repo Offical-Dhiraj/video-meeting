@@ -10,6 +10,7 @@ import { env } from "./config/env.js";
 import healthRoutes from "./routes/health.routes.js";
 import authRoutes from "./routes/auth.routes.js";
 import meetingRoutes from "./routes/meeting.routes.js";
+import messageRoutes from "./routes/message.routes.js";
 
 import { notFound } from "./middleware/notFound.middleware.js";
 import { errorHandler } from "./middleware/error.middleware.js";
@@ -71,6 +72,11 @@ app.use(
 app.use(
   "/api/meetings",
   meetingRoutes
+);
+
+app.use(
+  "/api/messages",
+  messageRoutes
 );
 
 app.use(notFound);

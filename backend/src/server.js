@@ -4,6 +4,10 @@ import app from "./app.js";
 import { env } from "./config/env.js";
 import connectDB from "./config/db.js";
 
+import {
+  initializeSocket,
+} from "./sockets/index.js";
+
 import "./models/User.js";
 import "./models/Meeting.js";
 import "./models/MeetingParticipant.js";
@@ -12,6 +16,9 @@ import "./models/Session.js";
 
 const server =
   http.createServer(app);
+
+const io =
+  initializeSocket(server);
 
 const startServer = async () => {
   try {
@@ -22,6 +29,10 @@ const startServer = async () => {
       () => {
         console.log(
           `🚀 MeetFlow API running on port ${env.PORT}`
+        );
+
+        console.log(
+          `🔌 Socket.IO ready`
         );
       }
     );
@@ -42,23 +53,31 @@ const gracefulShutdown = async (
     `${signal} received. Shutting down...`
   );
 
-  server.close(() => {
+  io.close(() => {
     console.log(
-      "HTTP server closed."
+      "Socket.IO server closed."
     );
 
-    process.exit(0);
+    server.close(() => {
+      console.log(
+        "HTTP server closed."
+      );
+
+      process.exit(0);
+    });
   });
 };
 
 process.on(
   "SIGTERM",
-  () => gracefulShutdown("SIGTERM")
+  () =>
+    gracefulShutdown("SIGTERM")
 );
 
 process.on(
   "SIGINT",
-  () => gracefulShutdown("SIGINT")
+  () =>
+    gracefulShutdown("SIGINT")
 );
 
 startServer();
